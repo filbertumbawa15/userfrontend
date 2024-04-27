@@ -185,4 +185,7 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
+
+    'api_url' => env('API_URL', config('app.api_url') . ''),
+
 ];

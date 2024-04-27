@@ -36,7 +36,7 @@
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input type="password" class="form-control" name="email" placeholder="Password">
+                        <input type="password" class="form-control" name="password" placeholder="Password">
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
@@ -63,12 +63,38 @@
     <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <!-- AdminLTE App -->
     <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+    <!-- Sweetalert -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script -->
+    <script src="{{ asset('dist/js/script.js') }}"></script>
 
     <script>
         $(document).ready(function() {
             $('#loginForm').submit(function(e){ 
                 e.preventDefault();
-                
+
+                      $('#loginForm .is-invalid').removeClass('is-invalid')
+                      $('#loginForm .invalid-feedback').remove()
+                      $('#loginForm').find('button:submit')
+                        .attr('disabled', 'disabled')
+                        .text('Signing In...')
+
+                $.ajax({
+                    url: `{{ config('app.api_url') }}login`,
+                    method: 'POST',
+                    dataType: 'JSON',
+                    data: $('#loginForm').serializeArray(),
+                    success: response => {
+                        document.cookie = `access-token=${response.access_token}`
+                        document.cookie = `user=${JSON.stringify(response.user)}`
+
+                        window.location.href = 'http://127.0.0.1:8081/admin/dashboard';
+                    }
+                }).always(() => {
+                    $('#loginForm').find('button:submit')
+                      .removeAttr('disabled')
+                      .text('Sign In')
+                });
             });
         });
     </script>
