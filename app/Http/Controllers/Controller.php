@@ -9,4 +9,9 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
+
+    public $httpHeaders = [
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json',
+    ];
 }

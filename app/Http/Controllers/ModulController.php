@@ -5,19 +5,24 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
-class PajakController extends Controller
+class ModulController extends Controller
 {
+    public $folder = "modul";
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         $data = $this->getMenu();
         $menu = $this->printRecursiveMenu(json_decode($data), false);
-        return view('pajak.index', compact('menu'));
+        $folder = $this->folder;
+        return view('settings.modul.index', compact('menu', 'folder'));
     }
 
     public function getMenu()
     {
         $status = [
-            'config_modul' => "pajak",
+            'config_modul' => "settings",
         ];
         $response = Http::withHeaders($this->httpHeaders)
             ->withOptions(['verify' => false])
@@ -72,7 +77,7 @@ class PajakController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
         //
     }

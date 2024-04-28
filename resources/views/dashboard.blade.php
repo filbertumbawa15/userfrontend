@@ -1051,6 +1051,7 @@
 
     <script type='text/javascript'>
         $(document).ready(function() {
+            console.log(console.log(document.cookie));
             const accessToken = getCookie('access-token')
             const userdata = JSON.parse(getCookie('user'))
             $.ajax({
@@ -1066,7 +1067,7 @@
                         let moduleRow = $(`
                         <div class="col-md-3">
                             <div class="rounded-3 shadow h-100 px-1">
-                                <a href="/admin/${detail.folder}"><span class="d-block text-center"><i class="bigIcon ${detail.module_icon}"></i></span></a>
+                                <a href="{{ strtolower(url("admin")) }}/${detail.folder}"><span class="d-block text-center"><i class="bigIcon ${detail.module_icon}"></i></span></a>
                                 <span class="d-block text-center p-2 text-secondary">${detail.modul_name}</span>
                             </div>
                         </div>

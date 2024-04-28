@@ -88,7 +88,7 @@
                         document.cookie = `access-token=${response.access_token}`
                         document.cookie = `user=${JSON.stringify(response.user)}`
 
-                        window.location.href = 'http://127.0.0.1:8081/admin/dashboard';
+                        window.location.href = 'http://localhost/userfrontend/public/admin/dashboard';
                     }
                 }).always(() => {
                     $('#loginForm').find('button:submit')
