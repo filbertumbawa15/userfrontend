@@ -13,6 +13,7 @@ class SettingsController extends Controller
     public function index()
     {
         $data = $this->getMenu();
+
         $menu = $this->printRecursiveMenu(json_decode($data), false);
         return view('settings.index', compact('menu'));
     }

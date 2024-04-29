@@ -43,6 +43,7 @@ Route::prefix('admin')->group(function () {
 
     Route::prefix('settings')->group(function () {
         Route::get('/', [SettingsCOntroller::class, 'index'])->name('settings');
+        Route::get('roles/akses/{id}', [RolesController::class, 'akses'])->name('roles.akses');
         Route::resource('roles', RolesController::class);
         Route::resource('modul', ModulController::class);
         Route::resource('menu', MenuController::class);
