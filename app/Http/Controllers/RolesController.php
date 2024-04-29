@@ -147,6 +147,6 @@ class RolesController extends Controller
     }
 
     $folder = $this->folder;
-    return view('settings.roles.akses', compact('menu', 'folder', 'config_modul', 'resultMenu' , 'id'));
+    return view('settings.roles.akses', compact('menu', 'folder', 'config_modul', 'resultMenu' , 'id', 'dataArray'));
   }
 }

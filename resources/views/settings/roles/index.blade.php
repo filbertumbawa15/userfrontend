@@ -78,7 +78,7 @@
 
 @push('page_custom_script')
 <script>
-	$(window).ready(function() {
+	$(document).ready(function() {
 		const accessToken = getCookie('access-token')
 		let table = $('#dataTable').DataTable({
 			processing: true,
