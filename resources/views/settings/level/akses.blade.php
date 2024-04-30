@@ -5,18 +5,6 @@
     <div class="card card-primary card-outline card-tabs">
         <div class="card-header p-0 pt-1 border-bottom-0">
             <ul class="nav nav-tabs" id="threeTab" role="tablist">
-                <!-- <li class="nav-item">
-                    <a href="a.png" class="nav-link {{ url()->current() == route('roles.akses', ['id' => '5fc874ed-03a4-11ef-ba3c-94de801a1234']) ? 'active' : '' }}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">Profile</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">Messages</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">Settings</a>
-                </li> -->
             </ul>
         </div>
 
@@ -51,9 +39,9 @@
         var jsonData = `{{ $config_modul }}`;
         var result = JSON.parse(jsonData.replace(/&quot;/g, '"'));
         $.each(result.data, function(index, detail) {
-            var urlData = "{{ url('admin/settings/roles') }}/akses/$id?param=" + detail.uuid + "";
+            var urlData = "{{ url('admin/settings/level') }}/akses/$id?param=" + detail.uuid + "";
             var resultData = "<li class='nav-item'>" +
-                "<a href={{ url('admin/settings/roles') }}/akses/{{ $id }}?param=" + detail.uuid + " class='nav-link'>" + detail.nama + "</a>" +
+                "<a href={{ url('admin/settings/level') }}/akses/{{ $id }}?param=" + detail.uuid + " class='nav-link'>" + detail.nama + "</a>" +
                 "</li>";
             $('#threeTab').append(resultData);
         });
@@ -163,7 +151,7 @@
 
     function saveLevelMenu(){
         if(checkedRows.length == 0){
-            window.location.href  = `{{ route("roles.index") }}`
+            window.location.href  = `{{ route("level.index") }}`
         }else{
             $.ajax({
                 url: `{{ config('app.api_url') }}levelakses`,
@@ -177,7 +165,7 @@
                     request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
                 },
                 success: response => {
-                    window.location.href  = `{{ route("roles.index") }}`
+                    window.location.href  = `{{ route("level.index") }}`
                 }
             })
         }

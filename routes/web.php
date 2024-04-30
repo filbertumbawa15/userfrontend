@@ -7,6 +7,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\ModulController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,19 +35,28 @@ Route::prefix('admin')->group(function () {
     Route::get('/', function () {
         return redirect()->route('dashboard');
     });
-
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::prefix('pajak')->group(function () {
+    Route::prefix('pajak')->middleware('checkcookie')->group(function () {
         Route::get('/', [PajakController::class, 'index'])->name('pajak');
     });
 
-    Route::prefix('settings')->group(function () {
+    Route::prefix('settings')->middleware('checkcookie')->group(function () {
         Route::get('/', [SettingsCOntroller::class, 'index'])->name('settings');
-        Route::get('roles/akses/{id}', [RolesController::class, 'akses'])->name('roles.akses');
-        Route::resource('roles', RolesController::class);
+
+        Route::get('level/akses/{id}', [RolesController::class, 'akses'])->name('level.akses');
+        Route::resource('level', RolesController::class);
+
         Route::resource('modul', ModulController::class);
+
         Route::resource('menu', MenuController::class);
-        // Route::resource('shippernoorder', ShipperNoOrderController::class);
+
+        Route::resource('user', UserController::class);
+    });
+
+    Route::prefix('emkl')->middleware('checkcookie')->group(function () {
+        Route::get('/', function () {
+            echo "anjay";
+        })->name('emkl');
     });
 });

@@ -187,5 +187,7 @@ return [
 
 
     'api_url' => env('API_URL', config('app.api_url') . ''),
+    'jwt_key' => env('JWT_KEY', 'ddwadu918412g4bkuaukawf91824g12uvakvaskuvuaf'),
+    'jwt_alg' => env('JWT_ALG', 'HS256'),
 
 ];

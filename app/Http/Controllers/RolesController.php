@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class RolesController extends Controller
 {
-  public $folder = 'roles';
+  public $folder = 'level';
 
   /**
    * Display a listing of the resource.
@@ -17,7 +17,7 @@ class RolesController extends Controller
     $data = $this->getMenu();
     $menu = $this->printRecursiveMenu(json_decode($data), false);
     $folder = $this->folder;
-    return view('settings.roles.index', compact('menu', 'folder'));
+    return view('settings.level.index', compact('menu', 'folder'));
   }
 
   public function getMenu()
@@ -147,6 +147,6 @@ class RolesController extends Controller
     }
 
     $folder = $this->folder;
-    return view('settings.roles.akses', compact('menu', 'folder', 'config_modul', 'resultMenu' , 'id', 'dataArray'));
+    return view('settings.level.akses', compact('menu', 'folder', 'config_modul', 'resultMenu' , 'id', 'dataArray'));
   }
 }

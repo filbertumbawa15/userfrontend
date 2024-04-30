@@ -5,12 +5,12 @@
 	<div class="container-fluid">
 		<div class="row mb-2">
 			<div class="col-sm-6">
-				<h1>Level</h1>
+				<h1>User</h1>
 			</div>
 			<div class="col-sm-6">
 				<ol class="breadcrumb float-sm-right">
 					<li class="breadcrumb-item"><a href="#">Home</a></li>
-					<li class="breadcrumb-item active">Level</li>
+					<li class="breadcrumb-item active">User</li>
 				</ol>
 			</div>
 		</div>
@@ -52,7 +52,7 @@
 			</div>
 			<form id="crudForm" data-action="add">
 				<div class="modal-body">
-					<input type="hidden" name="id">
+					<input type="hidden" name="uuid">
 					<div class="form-group row">
 						<div class="col-12">
 							<label>Level</label>
@@ -62,7 +62,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="submit" class="btn btn-primary">Save</button>
+					<button type="submit" class="btn btn-primary" id="btnSubmit">Save</button>
 				</div>
 			</form>
 		</div>
@@ -78,8 +78,66 @@
 
 @push('page_custom_script')
 <script>
-	$(document).ready(function() {
-		const accessToken = getCookie('access-token')
+	const accessToken = getCookie('access-token')
+	$(window).ready(function() {
+
+		$('#crudForm').submit(function(e) {
+			e.preventDefault();
+
+			let method
+			let url
+			let levelId = $('#crudForm').find('[name=uuid]').val()
+			let action = $('#crudForm').data('action')
+			let data = $('#crudForm').serializeArray()
+
+			switch (action) {
+				case 'add':
+					method = 'POST'
+					url = `{{ config('app.api_url') }}level`
+					break;
+				case 'edit':
+					method = 'PATCH'
+					url = `{{ config('app.api_url') }}level/${levelId}`
+					break;
+				case 'delete':
+					method = 'DELETE'
+					url = `{{ config('app.api_url') }}level/${levelId}`
+					break;
+				default:
+					method = 'POST'
+					url = `{{ config('app.api_url') }}level`
+					break;
+			}
+
+			$('#crudForm .is-invalid').removeClass('is-invalid')
+			$('#crudForm .invalid-feedback').remove()
+			$('#crudForm').find('button:submit')
+				.attr('disabled', 'disabled')
+				.text('Saving...')
+
+			$.ajax({
+				url: url,
+				method: method,
+				dataType: 'JSON',
+				data: $('#crudForm').serializeArray(),
+				beforeSend: request => {
+					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+				},
+				success: response => {
+					fireToast('success', '', response.message)
+
+					$('#crudModal').modal('hide')
+					$('#crudForm').trigger('reset')
+					table.ajax.reload(null, false)
+				}
+			}).always(() => {
+				$('#crudForm').find('button:submit')
+					.removeAttr('disabled')
+					.text('Save')
+			})
+
+		});
+
 		let table = $('#dataTable').DataTable({
 			processing: true,
 			serverSide: true,
@@ -87,7 +145,7 @@
 			pageLength: 10,
 			lengthMenu: [10, 25, 50, 75, 100],
 			ajax: {
-				url: `{{ config('app.api_url') }}level`,
+				url: `{{ config('app.api_url') }}user`,
 				beforeSend: request => {
 					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
 				},
@@ -138,8 +196,28 @@
 					data: 'uuid',
 				},
 				{
-					title: 'NAMA LEVEL',
-					data: 'nama_level'
+					title: 'NAMA',
+					data: 'nama'
+				},
+				{
+					title: 'EMAIL',
+					data: 'email'
+				},
+				{
+					title: 'LEVEL',
+					data: 'level'
+				},
+				{
+					title: 'HP',
+					data: 'hp'
+				},
+				{
+					title: 'PHOTO',
+					data: 'photo'
+				},
+				{
+					title: 'STATUS',
+					data: 'status'
 				},
 				{
 					title: 'CREATED AT',
@@ -250,18 +328,122 @@
 	    `)
 		form.data('action', 'add')
 		form.find(`.sometimes`).show()
-		$('#crudModalTitle').text('Create Cabang')
+		$('#crudModalTitle').text('Create User')
 		$('.is-invalid').removeClass('is-invalid')
 		$('.invalid-feedback').remove()
 
 		$('#crudModal').modal('show')
 	}
 
+	function checkModul(id) {
+		return new Promise((resolve, reject) => {
+			$.ajax({
+				url: `{{ config('app.api_url') }}getmodulbylevel`,
+				type: 'GET',
+				dataType: 'JSON',
+				data: {
+					level: id,
+				},
+				beforeSend: request => {
+					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+				},
+				success: response => {
+					resolve(response);
+				},
+				error: error => {
+					reject(error);
+				}
+			})
+		});
+	}
+
+	$(document).on('click', '.editButton', function() {
+		let id = $(this).data('id');
+		let form = $('#crudForm')
+
+		$('.modal-loader').removeClass('d-none')
+
+		form.trigger('reset')
+		form.find('#btnSubmit').html(`
+	      <i class="fa fa-save"></i>
+	      Save
+	    `)
+		form.data('action', 'edit')
+		form.find(`.sometimes`).show()
+		$('#crudModalTitle').text('Edit Modul')
+		$('.is-invalid').removeClass('is-invalid')
+		$('.invalid-feedback').remove()
+
+		Promise.all([
+			showModul(form, id),
+		]).then(() => {
+			$('#crudModal').modal('show')
+		})
+	});
+
 	$(document).on('click', '.aksesButton', function() {
 		let id = $(this).data('id');
-		// console.log(id);
-		// window.location.href = `{{ route('roles.akses', ["id" => "` + id + `"]) }}`
-		window.location.href = `{{ url("admin/settings/roles") }}/akses/${id}`;
+		checkModul(id).then((response) => {
+			if (response.data.length == 0) {
+				fireToast('warning', 'Warning', 'Modul masih kosong');
+			} else {
+				window.location.href = `{{ url("admin/settings/level") }}/akses/${id}`;
+			}
+		})
 	});
+
+	$(document).on('click', '.deleteButton', function() {
+		/* Handle onclick .deleteButton */
+		let id = $(this).data('id')
+
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$.ajax({
+					method: 'DELETE',
+					url: `{{ config('app.api_url') }}level/${id}`,
+					dataType: 'JSON',
+					beforeSend: request => {
+						request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+					},
+					success: response => {
+						// table.ajax.reload(null, false)
+						window.location.reload();
+
+						fireToast('success', 'Deleted!', 'data has been deleted')
+					}
+				})
+			}
+		})
+	})
+
+	function showModul(form, id) {
+		$.ajax({
+			url: `{{ config('app.api_url') }}level/${id}`,
+			method: 'GET',
+			dataType: 'JSON',
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				Accept: "application/json",
+			},
+			success: response => {
+				$.each(response.data, (index, value) => {
+					let element = form.find(`[name="${index}"]`)
+					if (element.is('select')) {
+						element.val(value).trigger('change')
+					} else {
+						element.val(value)
+					}
+				})
+			}
+		});
+	}
 </script>
 @endpush

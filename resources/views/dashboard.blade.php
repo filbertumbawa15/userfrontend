@@ -1051,7 +1051,6 @@
 
     <script type='text/javascript'>
         $(document).ready(function() {
-            console.log(console.log(document.cookie));
             const accessToken = getCookie('access-token')
             const userdata = JSON.parse(getCookie('user'))
             $.ajax({
