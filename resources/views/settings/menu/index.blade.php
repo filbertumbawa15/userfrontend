@@ -23,7 +23,7 @@
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">
-						<button type="button" class="btn btn-primary mb-3" id="addButton" onclick="createLevel()">
+						<button type="button" class="btn btn-primary mb-3" id="addButton" onclick="createMenu()">
 							Add
 						</button>
 					</div>
@@ -141,6 +141,11 @@
 			let action = $('#crudForm').data('action')
 			let data = $('#crudForm').serializeArray()
 
+			data.push({
+				name: 'namamenu',
+				value: `{{ $folder }}`,
+			})
+
 			switch (action) {
 				case 'add':
 					method = 'POST'
@@ -170,7 +175,7 @@
 				url: url,
 				method: method,
 				dataType: 'JSON',
-				data: $('#crudForm').serializeArray(),
+				data: data,
 				beforeSend: request => {
 					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
 				},
@@ -179,7 +184,7 @@
 
 					$('#crudModal').modal('hide')
 					$('#crudForm').trigger('reset')
-					table.ajax.reload(null, false)
+					table.ajax.reload(checkPermission, false)
 				}
 			}).always(() => {
 				$('#crudForm').find('button:submit')
@@ -319,6 +324,9 @@
 				},
 			],
 			order: [4, 'asc'],
+			initComplete: function(settings, json){
+				checkPermission()
+			}
 		});
 		/* Set row numbers */
 		table.on('order.dt search.dt draw', function() {
@@ -331,7 +339,13 @@
 				cell.innerHTML = i + 1 + (info.page * info.length);
 			});
 		})
+	});
 
+	$('#crudModal').on('hidden.bs.modal', () => {
+		$('#crudForm').trigger('reset')
+	})
+
+	function checkPermission(){	
 		$.ajax({
 			url: `{{ config('app.api_url') }}configmodullevelakses/haspermission`,
 			method: 'GET',
@@ -354,13 +368,9 @@
 				}
 			}
 		})
-	});
+	}
 
-	$('#crudModal').on('hidden.bs.modal', () => {
-		$('#crudForm').trigger('reset')
-	})
-
-	function createLevel() {
+	function createMenu() {
 		let form = $('#crudForm')
 
 		$('.modal-loader').removeClass('d-none')
@@ -408,6 +418,38 @@
 		})
 
 	});
+
+	$(document).on('click', '.deleteButton', function() {
+		/* Handle onclick .deleteButton */
+		let id = $(this).data('id')
+
+		Swal.fire({
+			title: 'Are you sure?',
+			text: "You won't be able to revert this!",
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Yes, delete it!'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$.ajax({
+					method: 'DELETE',
+					url: `{{ config('app.api_url') }}menu/${id}`,
+					dataType: 'JSON',
+					beforeSend: request => {
+						request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
+					},
+					success: response => {
+						// table.ajax.reload(null, false)
+						window.location.reload(); 	
+
+						fireToast('success', 'Deleted!', 'data has been deleted')
+					}
+				})
+			}
+		})
+	})
 
 
 	function getModulData() {

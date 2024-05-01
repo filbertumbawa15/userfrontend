@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -23,7 +24,7 @@
 			<div class="col-12">
 				<div class="card">
 					<div class="card-header">
-						<button type="button" class="btn btn-primary mb-3" id="addButton" onclick="createLevel()">
+						<button type="button" class="btn btn-primary mb-3" id="addButton" onclick="createUser()">
 							Add
 						</button>
 					</div>
@@ -55,10 +56,65 @@
 					<input type="hidden" name="uuid">
 					<div class="form-group row">
 						<div class="col-12">
-							<label>Level</label>
-							<input type="text" class="form-control" name="nama_level">
+							<label>Nama</label>
+							<input type="text" class="form-control" name="nama">
 						</div>
 					</div>
+					<div class="form-group row">
+						<div class="col-12">
+							<label>Email</label>
+							<input type="text" class="form-control" name="email">
+						</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-12">
+							<label>Password</label>
+							<input type="text" class="form-control" name="password">
+						</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-12">
+							<label>Level</label>
+							<select class="form-control" id="id_level" name="id_level">
+								<option selected disabled value="">-- PILIH LEVEL --</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-12">
+							<label>HP</label>
+							<input type="text" class="form-control" name="hp">
+						</div>
+					</div>
+					<div class="form-group row">
+						<div class="col-12">
+							<label>Status</label>
+							<select class="form-control" id="status" name="status">
+								<option selected disabled value="">-- PILIH STATUS --</option>
+								<option value="aktif">Aktif</option>
+								<option value="tidak">Non Aktif</option>
+							</select>
+						</div>
+					</div>
+					<div class="col">
+		              <div class="row mb-2">
+		                <div class="col">
+		                  <label class="col-form-label">Upload Photo</label>
+		                </div>
+		              </div>
+		              <div class="dropzone" data-field="photo" id="my-dropzone"></div>
+
+		              <div class="dz-preview dz-file-preview">
+		                <div class="dz-details">
+		                  <img data-dz-thumbnail />
+		                </div>
+		              </div>
+		              <!-- <div class="dropzone" data-field="phototrado">
+		                  <div class="fallback">
+		                    <input name="phototrado" type="file" />
+		                  </div>
+		                </div> -->
+		            </div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -70,15 +126,21 @@
 </div>
 @endsection
 
+@push('page_plugins_css')
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+@endpush
 
 @push('page_plugins')
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <script src="{{ asset('plugins/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('plugins/datatables-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
 @endpush
 
 @push('page_custom_script')
 <script>
+	Dropzone.autoDiscover = false;
 	const accessToken = getCookie('access-token')
+	let dropzones = [];
 	$(window).ready(function() {
 
 		$('#crudForm').submit(function(e) {
@@ -86,26 +148,43 @@
 
 			let method
 			let url
-			let levelId = $('#crudForm').find('[name=uuid]').val()
+			let userId = $('#crudForm').find('[name=uuid]').val()
 			let action = $('#crudForm').data('action')
 			let data = $('#crudForm').serializeArray()
+			let formData = new FormData()
+
+			dropzones.forEach(dropzone => {
+		        const {
+		          paramName
+		        } = dropzone.options
+
+		        dropzone.files.forEach((file, index) => {
+		          formData.append(`${paramName}[${index}]`, file)
+		        })
+		    })
+
+		    $.each(data, function(key, input) {
+		        formData.append(input.name, input.value);
+		    });
+
+		   	formData.append('namamenu', `{{ $folder }}`)
 
 			switch (action) {
 				case 'add':
 					method = 'POST'
-					url = `{{ config('app.api_url') }}level`
+					url = `{{ config('app.api_url') }}user`
 					break;
 				case 'edit':
 					method = 'PATCH'
-					url = `{{ config('app.api_url') }}level/${levelId}`
+					url = `{{ config('app.api_url') }}user/update/${userId}`
 					break;
 				case 'delete':
 					method = 'DELETE'
-					url = `{{ config('app.api_url') }}level/${levelId}`
+					url = `{{ config('app.api_url') }}user/${userId}`
 					break;
 				default:
 					method = 'POST'
-					url = `{{ config('app.api_url') }}level`
+					url = `{{ config('app.api_url') }}user`
 					break;
 			}
 
@@ -117,9 +196,11 @@
 
 			$.ajax({
 				url: url,
-				method: method,
+				method: 'POST',
 				dataType: 'JSON',
-				data: $('#crudForm').serializeArray(),
+				processData: false,
+        		contentType: false,
+				data: formData,
 				beforeSend: request => {
 					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
 				},
@@ -128,7 +209,7 @@
 
 					$('#crudModal').modal('hide')
 					$('#crudForm').trigger('reset')
-					table.ajax.reload(null, false)
+					table.ajax.reload(checkPermission, false)
 				}
 			}).always(() => {
 				$('#crudForm').find('button:submit')
@@ -205,7 +286,7 @@
 				},
 				{
 					title: 'LEVEL',
-					data: 'level'
+					data: 'nama_level'
 				},
 				{
 					title: 'HP',
@@ -213,7 +294,35 @@
 				},
 				{
 					title: 'PHOTO',
-					data: 'photo'
+					data: 'photo',
+					render: function(data){
+                        console.log(data)
+                        let images = []
+                        if (data) {
+                            let files = JSON.parse(data)
+
+                            files.forEach(file => {
+                                if (file == '') {
+                                    file = 'no-image'
+                                }
+                                let image = new Image()
+                                image.width = 75
+                                image.height = 100	
+                                image.src =
+                                    `{{ config('app.api_url') }}photo/image/photo/${encodeURI(file)}/medium/show`
+
+                                images.push(image.outerHTML)
+                            });
+
+                            return images.join(' ')
+                        } else {
+                            let image = new Image()
+                            image.width = 75
+                            image.height = 100	
+                            image.src = `{{ config('app.api_url') }}photo/image/photo/no-image/medium/show`
+                            return image.outerHTML
+                        }
+					}
 				},
 				{
 					title: 'STATUS',
@@ -248,7 +357,7 @@
 				{
 					searchable: false,
 					orderable: false,
-					targets: 6,
+					targets: 11,
 					render: (data, type, row) => {
 						let editButton = document.createElement('button')
 						editButton.dataset.id = row.uuid
@@ -260,16 +369,14 @@
 						deleteButton.className = 'btn btn-sm btn-danger d-inline deleteButton'
 						deleteButton.innerText = 'delete'
 
-						let aksesMenuButton = document.createElement('button')
-						aksesMenuButton.dataset.id = row.uuid
-						aksesMenuButton.className = 'btn btn-sm btn-info mr-1 d-inline aksesButton'
-						aksesMenuButton.innerText = 'Akses'
-
-						return editButton.outerHTML + deleteButton.outerHTML + aksesMenuButton.outerHTML
+						return editButton.outerHTML + deleteButton.outerHTML
 					}
 				},
 			],
 			order: [1, 'desc'],
+			initComplete: function (settings, json) {  
+		    	checkPermission();      
+		    }
 		});
 		/* Set row numbers */
 		table.on('order.dt search.dt draw', function() {
@@ -282,8 +389,13 @@
 				cell.innerHTML = i + 1 + (info.page * info.length);
 			});
 		})
+	});
 
+	$('#crudModal').on('hidden.bs.modal', () => {
+		$('#crudForm').trigger('reset')
+	})
 
+	function checkPermission(){
 		$.ajax({
 			url: `{{ config('app.api_url') }}configmodullevelakses/haspermission`,
 			method: 'GET',
@@ -310,13 +422,9 @@
 				console.log(error);
 			}
 		})
-	});
+	}
 
-	$('#crudModal').on('hidden.bs.modal', () => {
-		$('#crudForm').trigger('reset')
-	})
-
-	function createLevel() {
+	function createUser() {
 		let form = $('#crudForm')
 
 		$('.modal-loader').removeClass('d-none')
@@ -332,29 +440,14 @@
 		$('.is-invalid').removeClass('is-invalid')
 		$('.invalid-feedback').remove()
 
-		$('#crudModal').modal('show')
-	}
+		Promise.all([
+			initDropzone(form.data('action')),
+			getLevelData(),
+		]).then(() => {
+			$('#crudModal').modal('show')
+		})
 
-	function checkModul(id) {
-		return new Promise((resolve, reject) => {
-			$.ajax({
-				url: `{{ config('app.api_url') }}getmodulbylevel`,
-				type: 'GET',
-				dataType: 'JSON',
-				data: {
-					level: id,
-				},
-				beforeSend: request => {
-					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
-				},
-				success: response => {
-					resolve(response);
-				},
-				error: error => {
-					reject(error);
-				}
-			})
-		});
+		$('#crudModal').modal('show')
 	}
 
 	$(document).on('click', '.editButton', function() {
@@ -370,25 +463,18 @@
 	    `)
 		form.data('action', 'edit')
 		form.find(`.sometimes`).show()
-		$('#crudModalTitle').text('Edit Modul')
+		$('#crudModalTitle').text('Edit User')
 		$('.is-invalid').removeClass('is-invalid')
 		$('.invalid-feedback').remove()
-
+		$(`[name="password"]`).parents('.form-group').remove();
+		getLevelData()
+		
 		Promise.all([
-			showModul(form, id),
-		]).then(() => {
+			showUser(form, id),
+		]).then((user) => {
+			initDropzone(form.data('action'), user)
+		}).then(() => {
 			$('#crudModal').modal('show')
-		})
-	});
-
-	$(document).on('click', '.aksesButton', function() {
-		let id = $(this).data('id');
-		checkModul(id).then((response) => {
-			if (response.data.length == 0) {
-				fireToast('warning', 'Warning', 'Modul masih kosong');
-			} else {
-				window.location.href = `{{ url("admin/settings/level") }}/akses/${id}`;
-			}
 		})
 	});
 
@@ -408,7 +494,7 @@
 			if (result.isConfirmed) {
 				$.ajax({
 					method: 'DELETE',
-					url: `{{ config('app.api_url') }}level/${id}`,
+					url: `{{ config('app.api_url') }}user/${id}`,
 					dataType: 'JSON',
 					beforeSend: request => {
 						request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
@@ -424,26 +510,145 @@
 		})
 	})
 
-	function showModul(form, id) {
+	function getLevelData() {
 		$.ajax({
-			url: `{{ config('app.api_url') }}level/${id}`,
-			method: 'GET',
+			url: `{{ config('app.api_url') }}level`,
 			dataType: 'JSON',
-			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				Accept: "application/json",
+			type: 'GET',
+			beforeSend: request => {
+				request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
 			},
-			success: response => {
-				$.each(response.data, (index, value) => {
-					let element = form.find(`[name="${index}"]`)
-					if (element.is('select')) {
-						element.val(value).trigger('change')
-					} else {
-						element.val(value)
-					}
-				})
+			success: function(response) {
+				$('#crudForm').find('[name=id_level]').empty()
+				$('#crudForm').find('[name=id_level]').append(
+					new Option('-- PILIH LEVEL --', '', false, true)
+				).trigger('change')
+				$.each(response.data, function(index, value) {
+					var optionElement = $("<option>").text(value.nama_level).val(value.uuid);
+					$('#id_level').append(optionElement);
+				});
 			}
+		})
+	}
+
+	function showUser(form, id) {
+		return new Promise((resolve, reject) => {
+			$.ajax({
+				url: `{{ config('app.api_url') }}user/${id}`,
+				method: 'GET',
+				dataType: 'JSON',
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					Accept: "application/json",
+				},
+				success: response => {
+					$.each(response.data, (index, value) => {
+						let element = form.find(`[name="${index}"]`)
+						if (element.is('select')) {
+							element.val(value).trigger('change')
+						} else {
+							element.val(value)
+						}
+					})
+					resolve(response.data);
+				}, error : error => {
+					reject(error);
+				}
+			});
 		});
 	}
+
+
+	function initDropzone(action, data = null) {
+    let buttonRemoveDropzone = `<i class="fas fa-times-circle"></i>`
+	    $('.dropzone').each((index, element) => {
+	      if (!element.dropzone) {
+	        let newDropzone = new Dropzone(element, {
+	          url: 'test',
+	          thumbnailWidth: null,
+	          thumbnailHeight: null,
+	          autoProcessQueue: false,
+	          addRemoveLinks: true,
+	          minFilesize: 100,
+	          paramName: $(element).data('field'),
+          	  acceptedFiles: 'image/*',
+	          init: function() {
+	            dropzones.push(this)
+	            this.on("addedfile", function(file) {
+	              if (this.files.length > 1) {
+	                this.removeFile(file);
+	              }
+	            });
+	          }
+	        })
+	      }
+
+	      element.dropzone.removeAllFiles()
+
+	      if (action == 'edit' || action == 'delete' || action == 'view') {
+	        assignAttachment(element.dropzone, data)
+	      }
+	    })
+  	}
+
+  function assignAttachment(dropzone, data) {
+    const paramName = dropzone.options.paramName
+    const type = paramName.substring(2)
+
+    if (data[0][paramName] == '') {
+      $('.dropzone').each((index, element) => {
+        if (!element.dropzone) {
+	    let newDropzone = new Dropzone(element, {
+	          url: 'test',
+	          thumbnailWidth: null,
+	          thumbnailHeight: null,
+	          autoProcessQueue: false,
+	          addRemoveLinks: true,
+	          minFilesize: 100,
+	          paramName: $(element).data('field'),
+          	  acceptedFiles: 'image/*',
+	          init: function() {
+	            dropzones.push(this)
+	            this.on("addedfile", function(file) {
+	              if (this.files.length > 1) {
+	                this.removeFile(file);
+	              }
+	            });
+	          }
+	        })
+        }
+
+        element.dropzone.removeAllFiles()
+      })
+    } else {
+      let files = JSON.parse(data[0][paramName])
+      files.forEach((file) => {
+        // ${apiUrl}lampiran/image/kegiatan/${file}/ori/edit
+        getImgURL(`{{ config('app.api_url') }}photo/image/${type}/${file}/ori/edit`, (fileBlob) => {
+          let imageFile = new File([fileBlob], file, {
+            type: 'image/jpeg',
+            lastModified: new Date().getTime()
+          }, 'utf-8')
+          if (fileBlob.type != 'text/html') {
+            dropzone.options.addedfile.call(dropzone, imageFile);
+            dropzone.options.thumbnail.call(dropzone, imageFile, `{{ config('app.api_url') }}photo/image/${type}/${file}/ori/edit`);
+            dropzone.files.push(imageFile)
+          }
+        })
+      })
+
+    }
+  }
+
+  function getImgURL(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+      // console.log(xhr.response);
+      callback(xhr.response);
+    };
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+    xhr.send();
+  }
 </script>
 @endpush

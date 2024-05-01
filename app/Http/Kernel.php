@@ -66,5 +66,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'cors' => \App\Http\Middleware\Cors::class, 
         'checkcookie' => \App\Http\Middleware\CheckCookie::class,
+        'checkloggedin' => \App\Http\Middleware\CheckAlreadyLogin::class,
     ];
 }

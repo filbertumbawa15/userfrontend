@@ -31,7 +31,7 @@ Route::middleware('guest')->group(function () {
 
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('checkloggedin')->group(function () {
     Route::get('/', function () {
         return redirect()->route('dashboard');
     });

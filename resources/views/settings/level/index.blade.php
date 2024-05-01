@@ -90,6 +90,11 @@
 			let action = $('#crudForm').data('action')
 			let data = $('#crudForm').serializeArray()
 
+			data.push({
+				name: 'namamenu',
+				value: `{{ $folder }}`,
+			})
+
 			switch (action) {
 				case 'add':
 					method = 'POST'
@@ -119,7 +124,7 @@
 				url: url,
 				method: method,
 				dataType: 'JSON',
-				data: $('#crudForm').serializeArray(),
+				data: data,
 				beforeSend: request => {
 					request.setRequestHeader('Authorization', `Bearer ${accessToken}`)
 				},
@@ -128,7 +133,7 @@
 
 					$('#crudModal').modal('hide')
 					$('#crudForm').trigger('reset')
-					table.ajax.reload(null, false)
+					table.ajax.reload(checkPermission, false)
 				}
 			}).always(() => {
 				$('#crudForm').find('button:submit')
@@ -250,6 +255,9 @@
 				},
 			],
 			order: [1, 'desc'],
+		    initComplete: function (settings, json) {  
+		    	checkPermission();      
+		    }
 		});
 		/* Set row numbers */
 		table.on('order.dt search.dt draw', function() {
@@ -262,8 +270,13 @@
 				cell.innerHTML = i + 1 + (info.page * info.length);
 			});
 		})
+	});
 
+	$('#crudModal').on('hidden.bs.modal', () => {
+		$('#crudForm').trigger('reset')
+	})
 
+	function checkPermission(){
 		$.ajax({
 			url: `{{ config('app.api_url') }}configmodullevelakses/haspermission`,
 			method: 'GET',
@@ -290,11 +303,7 @@
 				console.log(error);
 			}
 		})
-	});
-
-	$('#crudModal').on('hidden.bs.modal', () => {
-		$('#crudForm').trigger('reset')
-	})
+	}
 
 	function createLevel() {
 		let form = $('#crudForm')

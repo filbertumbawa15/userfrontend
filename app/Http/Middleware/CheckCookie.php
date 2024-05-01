@@ -22,6 +22,9 @@ class CheckCookie
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // if (!auth()->check()) {
+        //     return redirect()->route('login');
+        // }
         //Handle this user can access this config route or not
         $class = explode('/', Route::current()->uri);
         $method = Route::current()->getActionMethod();

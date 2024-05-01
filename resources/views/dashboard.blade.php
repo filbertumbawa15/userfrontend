@@ -1013,24 +1013,19 @@
             <div id="id_cont" class="col-md-10 col-md-push-1 center-block center-self-block" style="margin-top:186px;margin-bottom:20px">
                 <div class="title-name company-pattern company-pattern-custom">
                     <div class="company-id">
-                        <div class="company-img">
-                            <img src="assets/img/usi.png">
-                        </div>
                         <div class="company-name">
-                            <h3>Sistem Informasi Akademik</h3>
-                            <h2>Siantar</h2>
-                            <h3>https://unsi.ac.id/</h3>
+                            <h3>User Management</h3>
                         </div>
                     </div>
                     <div class="pull-right link-right">
-                        <a href="https://unsi.ac.id/dashboard/profile"><i class="ion ion-person"></i> Halaman Profil</a>
-                        <a href="https://unsi.ac.id/admin/logout" class="out"><i class="ion ion-log-out"></i> Keluar</a>
+                        <a href="{{ route('logout') }}" class="out"><i class="ion ion-log-out"></i> Keluar</a>
                     </div>
                 </div>
                 <div id="main">
                     <div id="header" class="col-sm-12 col-xs-12">
                         <h1 class="main_title">Selamat Datang Administrator (Super Administrator)</h1>
-
+                        <div class="row">
+                        </div>
                     </div>
                     <div class="clr"></div>
                 </div>
@@ -1071,7 +1066,7 @@
                             </div>
                         </div>
                     `)
-                        $('.list-modul #id_cont #main #header').append(moduleRow)
+                        $('.list-modul #id_cont #main #header .row').append(moduleRow)
                     })
                 }
             })
